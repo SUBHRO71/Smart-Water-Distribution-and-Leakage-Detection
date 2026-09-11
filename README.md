@@ -86,6 +86,10 @@ The full 2018 audit found that this aggregate label is positive **97.8% of the t
 
 ## Next milestones
 
+For another coding model to continue the project, follow the
+[step-by-step implementation handoff](docs/HANDOFF_README.md). It defines the four
+remaining research phases, their deliverables, acceptance tests and completion gates.
+
 1. Audit full 2018 data, sensor coverage, leak prevalence and event intervals.
 2. Establish forecasting and anomaly-detection baselines with chronological validation.
 3. Implement and train CNN + LSTM; evaluate event detection, delay and forecasting error.
