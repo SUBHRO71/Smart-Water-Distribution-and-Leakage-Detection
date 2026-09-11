@@ -1,0 +1,169 @@
+{
+  "partitions": {
+    "train": {
+      "interval_start": "2018-01-01 00:00:00",
+      "interval_end": "2018-10-01 00:00:00",
+      "permitted_use": "Model and preprocessing fitting only"
+    },
+    "val_selection": {
+      "interval_start": "2018-10-01 00:00:00",
+      "interval_end": "2018-11-01 00:00:00",
+      "permitted_use": "Hyperparameter selection, early stopping, ablations"
+    },
+    "val_calibration": {
+      "interval_start": "2018-11-01 00:00:00",
+      "interval_end": "2018-12-01 00:00:00",
+      "permitted_use": "Fit probability calibration functions (Platt sigmoid, isotonic)"
+    },
+    "val_alert": {
+      "interval_start": "2018-12-01 00:00:00",
+      "interval_end": "2019-01-01 00:00:00",
+      "permitted_use": "Calibration method selection and alert decision threshold tuning"
+    },
+    "final_test": {
+      "interval_start": "2019-01-01 00:00:00",
+      "interval_end": "2020-01-01 00:00:00",
+      "permitted_use": "Locked final evaluation only (never consulted during development)"
+    }
+  },
+  "window_contract": {
+    "history_steps": 288,
+    "history_duration_hours": 24.0,
+    "history_interval": "[origin - 24h + 5m, origin]",
+    "forecast_horizon_steps": 12,
+    "forecast_duration_hours": 1.0,
+    "forecast_interval": "[origin + 5m, origin + 60m]",
+    "cadence_minutes": 5
+  },
+  "evaluation_protocols": {
+    "operational_rolling": {
+      "description": "Standard continuous monitoring protocol. History before partition start is permitted as valid past context. Windows whose forecast target horizon crosses the partition end boundary are truncated.",
+      "future_target_crossing_allowed": false,
+      "past_boundary_context_allowed": true
+    },
+    "strict_event_independent": {
+      "description": "Strict event-independent evaluation. Any window in an earlier partition whose input history or forecast target overlaps a leak event continuing into the subsequent partition is purged to prevent temporal leak contamination.",
+      "boundary_crossing_events_count": 13,
+      "purging_rule": "Purge if [history_start, target_end] intersects boundary-crossing event interval."
+    }
+  },
+  "boundary_crossing_events": [
+    {
+      "event_id": "EV_001",
+      "pipe_id": "p257",
+      "area": "Area_C",
+      "boundary": "2018-10-01 00:00:00",
+      "boundary_name": "train->next",
+      "onset": "2018-01-09 00:30:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_004",
+      "pipe_id": "p427",
+      "area": "Area_A",
+      "boundary": "2018-10-01 00:00:00",
+      "boundary_name": "train->next",
+      "onset": "2018-02-16 04:15:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_010",
+      "pipe_id": "p654",
+      "area": "Area_A",
+      "boundary": "2018-10-01 00:00:00",
+      "boundary_name": "train->next",
+      "onset": "2018-07-07 09:10:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_011",
+      "pipe_id": "p810",
+      "area": "Area_A",
+      "boundary": "2018-10-01 00:00:00",
+      "boundary_name": "train->next",
+      "onset": "2018-07-30 18:40:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_001",
+      "pipe_id": "p257",
+      "area": "Area_C",
+      "boundary": "2018-11-01 00:00:00",
+      "boundary_name": "val_selection->next",
+      "onset": "2018-01-09 00:30:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_004",
+      "pipe_id": "p427",
+      "area": "Area_A",
+      "boundary": "2018-11-01 00:00:00",
+      "boundary_name": "val_selection->next",
+      "onset": "2018-02-16 04:15:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_010",
+      "pipe_id": "p654",
+      "area": "Area_A",
+      "boundary": "2018-11-01 00:00:00",
+      "boundary_name": "val_selection->next",
+      "onset": "2018-07-07 09:10:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_011",
+      "pipe_id": "p810",
+      "area": "Area_A",
+      "boundary": "2018-11-01 00:00:00",
+      "boundary_name": "val_selection->next",
+      "onset": "2018-07-30 18:40:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_014",
+      "pipe_id": "p369",
+      "area": "Area_A",
+      "boundary": "2018-11-01 00:00:00",
+      "boundary_name": "val_selection->next",
+      "onset": "2018-10-26 02:05:00",
+      "end_exclusive": "2018-11-08 20:30:00"
+    },
+    {
+      "event_id": "EV_001",
+      "pipe_id": "p257",
+      "area": "Area_C",
+      "boundary": "2018-12-01 00:00:00",
+      "boundary_name": "val_calibration->next",
+      "onset": "2018-01-09 00:30:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_004",
+      "pipe_id": "p427",
+      "area": "Area_A",
+      "boundary": "2018-12-01 00:00:00",
+      "boundary_name": "val_calibration->next",
+      "onset": "2018-02-16 04:15:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_010",
+      "pipe_id": "p654",
+      "area": "Area_A",
+      "boundary": "2018-12-01 00:00:00",
+      "boundary_name": "val_calibration->next",
+      "onset": "2018-07-07 09:10:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    },
+    {
+      "event_id": "EV_011",
+      "pipe_id": "p810",
+      "area": "Area_A",
+      "boundary": "2018-12-01 00:00:00",
+      "boundary_name": "val_calibration->next",
+      "onset": "2018-07-30 18:40:00",
+      "end_exclusive": "2019-01-01 00:00:00"
+    }
+  ]
+}

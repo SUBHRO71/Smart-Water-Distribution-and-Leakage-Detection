@@ -76,7 +76,8 @@ inventory, target/split modules, tests, configs, docs/results and EXECUTION_READ
 were untracked local work. This documentation update preserves them and does not stage
 them as part of the plan commit.
 
-Next: correct the small pre-training defects, resolve the paper/data recipe, and produce
-the ten-fold feasibility report from the [handoff](HANDOFF_README.md). The current turn
-records those fixes as tasks for the implementation model; it does not silently alter
-the uncommitted implementation or claim that training is ready.
+The split-boundary, complete-window, missing-label and demand-wording corrections were
+implemented after this review. The ten-fold audit then confirmed that current area labels
+do not support the requested experiment. See the
+[executed feasibility report](results/prerequisite-and-feasibility.md). The remaining
+dependency is a scenario dataset/target with sufficient independent class support.

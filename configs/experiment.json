@@ -1,0 +1,70 @@
+{
+  "status": "ready_for_fold_local_preprocessing_and_smote_implementation",
+  "classification_dataset": {
+    "name": "LeakDB Hanoi_CMH example benchmark",
+    "source_repository": "https://github.com/KIOS-Research/LeakDB",
+    "source_repository_commit": "131144ba423a82639f881adab0d493ab50e3b2fb",
+    "archive_path": "CCWI-WDSA2018/Benchmarks/Hanoi_CMH.zip",
+    "archive_md5": "700e10f8a90f028f838fcae49660225c",
+    "scenarios": 10,
+    "cadence_minutes": 30,
+    "label": "binary leak presence from each scenario Labels.csv"
+  },
+  "paper_tracks": {
+    "exact_dataset_anchor": "Vrachimis et al. 2018, LeakDB benchmark, DOI 10.5281/zenodo.1313116",
+    "ltown_autoencoder_reference": "Doss et al. 2024, DOI 10.2166/ws.2024.174",
+    "ltown_exact_reproduction_status": "blocked: reference uses separate generated leak-free and single-leak pressure scenarios"
+  },
+  "common_classification_comparison": {
+    "feature_track": "pressure_only",
+    "features": [
+      "pressure__node_2", "pressure__node_3", "pressure__node_4",
+      "pressure__node_5", "pressure__node_6", "pressure__node_7",
+      "pressure__node_8", "pressure__node_9", "pressure__node_10",
+      "pressure__node_11", "pressure__node_12", "pressure__node_13",
+      "pressure__node_14", "pressure__node_15", "pressure__node_16",
+      "pressure__node_17", "pressure__node_18", "pressure__node_19",
+      "pressure__node_20", "pressure__node_21", "pressure__node_22",
+      "pressure__node_23", "pressure__node_24", "pressure__node_25",
+      "pressure__node_26", "pressure__node_27", "pressure__node_28",
+      "pressure__node_29", "pressure__node_30", "pressure__node_31",
+      "pressure__node_32"
+    ],
+    "excluded_features": {
+      "pressure__node_1": "constant zero across all scenarios",
+      "scenario": "group/provenance identifier only",
+      "timestamp": "ordering/provenance only",
+      "label": "target only"
+    },
+    "history_steps": 24,
+    "history_duration_hours": 12,
+    "window_stride_steps": 6,
+    "window_stride_hours": 3,
+    "target": "current binary leak presence at the final history timestamp",
+    "models": [
+      "1D-CNN + LSTM",
+      "CNN + BiLSTM + Attention",
+      "Autoencoder + LSTM",
+      "Transformer + CNN",
+      "sensor-correlation GNN + LSTM"
+    ]
+  },
+  "validation": {
+    "development_time": "[2017-01-01, 2017-10-01)",
+    "locked_test_time": "[2017-10-01, 2018-01-01)",
+    "cv": "10-fold leave-one-scenario-out within development time",
+    "fold_training_smote": "k_neighbors=5, seed recorded, no-SMOTE control",
+    "fold_training_support": "all 10 folds have both classes and sufficient minority rows",
+    "fold_assessment_note": "4 held-out scenarios have both classes; aggregate out-of-fold metrics use all 10, while class-dependent per-fold metrics are undefined for 6 no-leak scenarios",
+    "test_event_note": "report new events separately from leaks continuing across 2017-10-01"
+  },
+  "demand_forecasting_track": {
+    "dataset": "BattLeDIM L-Town 2018/2019",
+    "status": "separate later regression experiment",
+    "smote": "not applicable to continuous demand targets"
+  },
+  "training_gate": {
+    "open": true,
+    "next_step": "implement fold-local scaling, window construction, SMOTE and no-SMOTE controls; run smoke tests before model training"
+  }
+}

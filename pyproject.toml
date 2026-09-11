@@ -12,7 +12,7 @@ dependencies = ["numpy>=1.26,<3", "pandas>=2.2,<3"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
-deep = ["torch>=2.6,<3", "scikit-learn>=1.5,<2"]
+deep = ["torch>=2.6,<3", "scikit-learn>=1.5,<2", "imbalanced-learn>=0.13,<1"]
 
 [project.scripts]
 smart-water = "smart_water.cli:main"
@@ -22,6 +22,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
 
 [tool.ruff]
 line-length = 100

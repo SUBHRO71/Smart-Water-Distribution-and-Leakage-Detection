@@ -4,10 +4,12 @@
 from the problem statement. Deliver experiments, diagnostic plots and comparison tables.
 No dashboard, full-network graph application, hydraulic control system or deployment.
 
-**Status:** download/preparation and a seasonal flow baseline are committed. Additional
-local Phase 1 audit, event, target and split work exists but was uncommitted at review.
-SMOTE, cross-validation and the five models are planned, not implemented by this update.
-Read the [existing-work review](docs/PLAN_CHANGE_REVIEW.md) before training.
+**Execution status (updated 2026-09-11):** the BattLeDIM audit exposed an unusable
+area-label design, so the classification track now uses the official LeakDB Hanoi_CMH
+benchmark. Its ten scenarios have been checksum-recorded, aligned into one CSV, audited,
+split chronologically and converted to causal 12-hour windows. Fold-local scaling and
+training-only SMOTE have been implemented and smoke-tested on real data. The suite passes
+33 tests and Ruff. Model training is the next phase and has not started.
 
 ## Required workflow
 
@@ -65,9 +67,13 @@ balance continuous demand targets.
 
 ## Dataset and paper matching
 
-Retain [BattLeDIM / L-Town](https://doi.org/10.5281/zenodo.4017659) as the starting
-dataset; the full 2018 release is local. [LeakDB](https://github.com/KIOS-Research/LeakDB)
-is a candidate if more independent labeled scenarios are required.
+Use the official [LeakDB](https://github.com/KIOS-Research/LeakDB) Hanoi_CMH benchmark
+for the shared five-model classification comparison. The source is pinned to commit
+`131144ba423a82639f881adab0d493ab50e3b2fb`; archive MD5 is
+`700e10f8a90f028f838fcae49660225c`. It has ten 2017 scenarios, 32 pressure channels
+and binary leak labels at 30-minute cadence. Constant Node 1 is excluded, leaving 31
+inputs. Raw and processed datasets remain outside Git. BattLeDIM remains the separate
+demand-forecasting track and completed audit source.
 
 Begin with a pressure-only feature track using the same ordered channels for all models.
 An expanded pressure/flow/AMR/level track may be compared separately. Do not attach
@@ -85,7 +91,7 @@ No single verified paper was found that provides the exact five hybrids and this
 workflow on identical public CSV features. Some L-Town papers train on newly simulated
 data, rather than the downloaded CSVs. Same network name does not establish reproduction.
 
-## Resolve target and fold feasibility first
+## Target and fold feasibility decision
 
 The aggregate leak label is positive 97.8% of 2018. Existing area labels also become
 constant in October–December: A/C always positive, B always negative. Fourteen observed
@@ -96,10 +102,11 @@ Revisit pipe/event/scenario targets against the chosen paper. Use binary leak/no
 when only those labels exist. Normal / Leakage / Abnormal consumption needs an actual
 third-class label source, with simultaneous and unknown events handled explicitly.
 
-Produce a fold-feasibility table before training. A fold missing classes, sufficient
-SMOTE neighbors or usable purged events is unsupported. Do not shuffle or duplicate
-incidents to force ten valid folds; document a suitable scenario dataset or an explicit
-change in fold count.
+The BattLeDIM area targets failed the gate and are excluded from five-model training.
+All ten LeakDB scenario-held-out folds contain both training classes and enough minority
+windows for `k_neighbors=5`. Six held-out scenarios contain no leak, so their per-fold
+PR-AUC/recall is undefined; report aggregate out-of-fold metrics across all ten and the
+valid-fold count. Report new and boundary-carryover events separately on locked test.
 
 ## Diagnostics and comparison metrics
 
@@ -124,13 +131,14 @@ Python 3.11+; PowerShell from this repository:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pip install "scikit-learn>=1.5,<2" "imbalanced-learn>=0.13,<1"
 .\.venv\Scripts\smart-water.exe download --full
 .\.venv\Scripts\smart-water.exe prepare
 .\.venv\Scripts\smart-water.exe baseline
+.\.venv\Scripts\smart-water.exe prepare-leakdb
+.\.venv\Scripts\smart-water.exe preprocess-leakdb
 .\.venv\Scripts\python.exe -m ruff check .
-# Avoid the existing fixed pytest_tmp ownership conflict:
-$reviewTemp = Join-Path $env:TEMP ('water-tests-' + [guid]::NewGuid().ToString('N'))
-.\.venv\Scripts\python.exe -m pytest -q --basetemp $reviewTemp
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
 The p227 seasonal flow score is not a leak-classification result. Raw data, processed
@@ -143,6 +151,10 @@ Follow [HANDOFF_README.md](docs/HANDOFF_README.md) for execution and test condit
 Read [PLAN_CHANGE_REVIEW.md](docs/PLAN_CHANGE_REVIEW.md) for reusable work and required
 corrections. Earlier execution logs are historical evidence, not approval of the revised
 training protocol.
+
+Current next action: implement conventional baselines on the frozen LeakDB windows,
+compare no-SMOTE and SMOTE inside every scenario-held-out fold, and save out-of-fold
+predictions. Neural training follows after the baseline metrics are verified.
 
 BattLeDIM attribution: Vrachimis et al., 2020,
 [DOI 10.5281/zenodo.4017659](https://doi.org/10.5281/zenodo.4017659), CC BY 4.0.
