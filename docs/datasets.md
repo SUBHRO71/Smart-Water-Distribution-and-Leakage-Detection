@@ -2,7 +2,12 @@
 
 Research date: 2026-09-11. Ranking reflects this project's combined requirements, not a universal benchmark ranking.
 
-## 1. BattLeDIM / L-Town — primary choice
+Current execution decision (2026-09-12): LeakDB Hanoi_CMH is prepared for the common
+five-model comparison. Each paper experiment must use that paper's actual data and
+features; see the [main README](../README.md). The original ranking below is historical
+dataset research, not permission to substitute one dataset for another paper's data.
+
+## 1. BattLeDIM / L-Town — original choice and audit source
 
 Use the [versioned Zenodo release](https://doi.org/10.5281/zenodo.4017659), the [organizer repository](https://github.com/KIOS-Research/BattLeDIM), and its [problem/rules document](https://zenodo.org/records/3902046).
 

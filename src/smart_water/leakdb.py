@@ -1,6 +1,5 @@
 """CSV preparation and scenario-grouped feasibility checks for LeakDB Hanoi."""
 
-import hashlib
 import io
 import json
 import re
@@ -10,6 +9,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from smart_water.data import file_md5
 
 
 def prepare_hanoi_archive(archive: Path, output: Path) -> dict[str, Any]:
@@ -43,7 +44,7 @@ def prepare_hanoi_archive(archive: Path, output: Path) -> dict[str, Any]:
     audit.to_csv(output / "hanoi_scenario_audit.csv", index=False)
     summary = {
         "source_archive": str(archive),
-        "source_md5": _md5(archive),
+        "source_md5": file_md5(archive),
         "rows": len(combined),
         "scenarios": len(frames),
         "pressure_channels": 32,
@@ -165,8 +166,3 @@ def _count_positive_runs(labels: pd.Series) -> int:
     if not len(values):
         return 0
     return int(((values == 1) & np.r_[True, values[:-1] != 1]).sum())
-
-
-def _md5(path: Path) -> str:
-    with path.open("rb") as handle:
-        return hashlib.file_digest(handle, "md5").hexdigest()

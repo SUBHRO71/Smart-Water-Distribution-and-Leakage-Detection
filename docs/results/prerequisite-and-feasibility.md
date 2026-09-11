@@ -30,4 +30,8 @@ Causal windows contain 24 half-hour observations with stride 6. Execution produc
 training only; SMOTE changed training counts from 16,121 negative / 3,508 positive to
 16,121 / 16,121. The 2,181 held-out labels stayed unchanged.
 
-The preprocessing gate is **open**. Conventional baselines are the next phase.
+The preprocessing smoke check passed; it is not evidence of completed model training or
+paper reproduction. Following the 2026-09-12 scope consolidation, the next phase is to
+verify paper-specific data/recipes and the research gap in the [main README](../../README.md).
+The prepared common dataset remains reusable. Its duplicate/source-independence audit
+and complete ten-fold preprocessing verification are still required before training.

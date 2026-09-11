@@ -1,5 +1,11 @@
 # Phase 1: EDA and Sensor Coverage Audit Summary
 
+Historical snapshot from the first audit. The area-label gate below was subsequently
+rejected for classification; the original split counts include a corrected endpoint bug.
+Use the [current feasibility report](prerequisite-and-feasibility.md) and
+[main README](../../README.md) for decisions. In the old demand wording below,
+"cumulative consumption" denotes a sequence of aggregate AMR flow rates, not volume.
+
 **Date:** 2026-09-11
 **Dataset:** BattLeDIM 2018 (Historical Development Dataset)
 **Deliverables:**

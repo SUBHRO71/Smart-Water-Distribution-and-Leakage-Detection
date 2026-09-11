@@ -37,7 +37,7 @@ def download(output: Path, year: int = 2018, full: bool = False) -> list[Path]:
         if algorithm != "md5":
             raise ValueError(f"Unexpected upstream checksum: {algorithm}")
         destination = output / name
-        if destination.exists() and _md5(destination) == expected:
+        if destination.exists() and file_md5(destination) == expected:
             downloaded.append(destination)
             continue
         temporary = destination.with_suffix(destination.suffix + ".part")
@@ -47,7 +47,7 @@ def download(output: Path, year: int = 2018, full: bool = False) -> list[Path]:
                 temporary.open("wb") as handle,
             ):
                 shutil.copyfileobj(response, handle)
-            if _md5(temporary) != expected:
+            if file_md5(temporary) != expected:
                 raise ValueError(f"Checksum mismatch: {name}")
             temporary.replace(destination)
         finally:
@@ -61,7 +61,7 @@ def download(output: Path, year: int = 2018, full: bool = False) -> list[Path]:
     return downloaded
 
 
-def _md5(path: Path) -> str:
+def file_md5(path: Path) -> str:
     # MD5 is used solely to match the publisher's file-integrity metadata.
     with path.open("rb") as handle:
         return hashlib.file_digest(handle, "md5").hexdigest()

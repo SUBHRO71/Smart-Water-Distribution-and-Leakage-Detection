@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+import pandas as pd
+
 from smart_water.audit import audit_raw_dataset, generate_coverage_svg, parse_network_topology
 from smart_water.baseline import evaluate
 from smart_water.data import download, load_scada, prepare
@@ -116,7 +118,6 @@ def main() -> None:
     elif args.command == "inventory":
         args.output.mkdir(parents=True, exist_ok=True)
         network_info = parse_network_topology(args.inp)
-        import pandas as pd
         leaks_df = pd.read_csv(args.leaks, sep=";", decimal=",", index_col="Timestamp")
         leaks_df.index = pd.to_datetime(leaks_df.index)
         events_df, unresolved_df = extract_leak_events(leaks_df, network_info, threshold=args.threshold)
@@ -127,7 +128,6 @@ def main() -> None:
         print(f"Extracted {len(events_df)} leak events, {len(unresolved_df)} unresolved pipes.")
         print(f"Deliverables written to {ev_path} and {unres_path}")
     elif args.command == "targets":
-        import pandas as pd
         leaks_df = pd.read_csv(args.leaks, sep=";", decimal=",", index_col="Timestamp")
         leaks_df.index = pd.to_datetime(leaks_df.index)
         events_df = pd.read_csv(args.events)
@@ -150,7 +150,6 @@ def main() -> None:
         print(f"Label balance written to {args.reports_output}")
         print(f"Target contract written to {args.config_output}")
     elif args.command == "splits":
-        import pandas as pd
         events_df = pd.read_csv(args.events)
         flows_df = pd.read_csv(args.flows, sep=";", decimal=",", usecols=["Timestamp"])
         index = pd.DatetimeIndex(pd.to_datetime(flows_df["Timestamp"]))
@@ -170,7 +169,6 @@ def main() -> None:
         print(f"Splits configuration written to {args.config_output}")
         print(f"Sample manifest written to {args.manifest_sample}")
     elif args.command == "cv-feasibility":
-        import pandas as pd
         events_df = pd.read_csv(args.events)
         timestamps = pd.read_csv(args.flows, sep=";", usecols=["Timestamp"])
         index = pd.DatetimeIndex(pd.to_datetime(timestamps["Timestamp"]))
@@ -185,7 +183,6 @@ def main() -> None:
         print(report.to_string(index=False))
         print(f"Feasibility report written to {args.output}")
     elif args.command == "leakage-audit":
-        import pandas as pd
         features = pd.read_csv(args.features, index_col="timestamp", parse_dates=True)
         events_df = pd.read_csv(args.events)
         targets = create_target_matrix(features.index, events_df)
@@ -201,7 +198,6 @@ def main() -> None:
         correlations.to_csv(args.output / "feature_target_correlations.csv", index=False)
         print(json.dumps(summary, indent=2))
     elif args.command == "prepare-leakdb":
-        import pandas as pd
         summary = prepare_hanoi_archive(args.archive, args.output)
         frame = pd.read_csv(
             args.output / "hanoi_pressure_labels.csv", parse_dates=["timestamp"]
@@ -215,7 +211,6 @@ def main() -> None:
         print(json.dumps(summary, indent=2))
         print(json.dumps(feasibility, indent=2))
     elif args.command == "preprocess-leakdb":
-        import pandas as pd
 
         frame = pd.read_csv(args.input, parse_dates=["timestamp"])
         features = [

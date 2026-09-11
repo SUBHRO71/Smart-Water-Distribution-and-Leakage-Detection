@@ -91,12 +91,13 @@ CSV columns is a new experiment, not equivalent feature training.
 
 ## What to choose now
 
-Keep P1 as the dataset/protocol anchor. P2 is the closest verified L-Town temporal
-autoencoder reference, with an explicit generated-training-data dependency. Start our
-five-model comparison on a shared pressure-only track, after fixing label/fold feasibility.
-This gives a controlled internal comparison; it does not yet fulfill exact reproduction
-of P2. If matching a published training recipe is mandatory, resolving that data dependency
-is the first gate, before training or claiming comparable paper accuracy.
+Follow the [main README](../README.md) for the single execution plan. Verify the actual
+paper datasets and recipes before training. LeakDB is prepared for the common comparison;
+it does not replace P2's generated L-Town scenarios or P5's acoustic data. Reproduce each
+paper's documented split and add mandatory ten-fold CV within development. P1 supplies
+benchmark context and has no direct M1 architecture mapping. All five hybrids remain
+required; adaptations must be distinguished from exact paper reproductions. The proposed
+research gap still requires literature evidence and a controlled experiment.
 
 | Requested model | Verified related reference | Exact model/data equivalence |
 | --- | --- | --- |
