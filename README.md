@@ -1,103 +1,149 @@
-# AI-Based Smart Water Distribution and Leakage Detection
+# Smart Water Leakage Detection: Five-Hybrid Comparative Study
 
-A Python research project for forecasting water demand and identifying potential pipeline leaks from flow, pressure, consumption and time-series signals.
+**Revised scope (2026-09-11):** a CSV-based research pipeline comparing all five hybrids
+from the problem statement. Deliver experiments, diagnostic plots and comparison tables.
+No dashboard, full-network graph application, hydraulic control system or deployment.
 
-**Status:** dataset pipeline and seasonal baseline implemented. CNN + LSTM, calibrated risk scoring and the application are planned; no trained AI accuracy is claimed. See the [initial verification results](docs/verification.md).
+**Status:** download/preparation and a seasonal flow baseline are committed. Additional
+local Phase 1 audit, event, target and split work exists but was uncommitted at review.
+SMOTE, cross-validation and the five models are planned, not implemented by this update.
+Read the [existing-work review](docs/PLAN_CHANGE_REVIEW.md) before training.
 
-## Dataset recommendation
+## Required workflow
 
-Choose **BattLeDIM / L-Town as the primary leakage dataset**, and **BWDF as a separate weather-aware demand forecasting benchmark**. These are different networks: do not join their rows or attach BWDF weather to L-Town.
+```text
+Load CSV dataset
+  ↓
+Preprocessing: schema, timestamps, units, missingness audit
+  ↓
+Data leakage checks: target leakage • duplicates • suspicious features
+  ↓
+Lock train / validation / test (or train / test with internal validation)
+  ↓
+10-fold chronological cross-validation within training/development
+  ↓  Inside EACH fold:
+Fit imputation / scaling / feature selection on fold-training only
+  ↓
+SMOTE on fold-training only
+  ↓
+Initial training of all five models
+  ↓
+Overfitting / underfitting diagnosis
+  ↓
+Document correction → retrain and compare validation results
+  ↓
+Freeze model, preprocessing, calibration and thresholds
+  ↓
+Final untouched test evaluation and comparison report
+```
 
-| Priority | Dataset | Best use | Main limitation |
-| --- | --- | --- | --- |
-| 1 | [BattLeDIM / L-Town](https://doi.org/10.5281/zenodo.4017659) | Joint hydraulic signal analysis, leak detection and localization; includes sensor CSVs, leak time series and an EPANET model | Simulated benchmark; no supplied weather or separate abnormal-consumption class |
-| 2 | [Battle of Water Demand Forecasting (BWDF)](https://github.com/WaterFutures/wf4bwdf) | Hourly demand forecasting across 10 district metered areas with weather | Not a labeled pipe-leak benchmark; net inflow includes losses |
-| 3 | [LeakDB](https://github.com/KIOS-Research/LeakDB) | Additional synthetic leak scenarios and robustness across network conditions | Simulation-to-field generalization must be tested |
-| 4 | [Water demand datasets, Mendeley](https://doi.org/10.17632/4yhprsgjrf.1) | Simple real utility forecasting comparison; choose Dataset 2, hourly Hillsborough inflow/outflow | No pipe-leak labels; Dataset 3 is sewer flow |
+The preprocessing stage before splitting performs audits and deterministic conversions.
+Learned transformations and resampling occur inside each training fold. Use time-ordered
+CV for these time series, rather than shuffled row-wise K-fold. Validation/test retain
+their original distribution. [TimeSeriesSplit documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html),
+[imbalanced-learn leakage guidance](https://imbalanced-learn.org/stable/common_pitfalls.html).
 
-The photograph suggests [UCI Individual Household Electric Power Consumption](https://archive.ics.uci.edu/dataset/235/individual+household+electric+power+consumption). It is useful for practicing time-series code, but electricity cannot validate hydraulic leak detection. Indian open-data portals are a discovery route, not a verified substitute for timestamped, labeled pressure/flow measurements.
+## All five algorithms are required
 
-See [dataset selection and sources](docs/datasets.md) for access, coverage and licensing notes. Sources checked on September 11, 2026.
+| ID | Hybrid | Bounded implementation |
+| --- | --- | --- |
+| M1 | 1D-CNN + LSTM | Two temporal convolutions → unidirectional LSTM → head |
+| M2 | CNN + BiLSTM + Attention | CNN → historical-window BiLSTM → attention pooling → head |
+| M3 | Autoencoder + LSTM | Training-fitted encoder → latent historical sequence → LSTM → head |
+| M4 | Transformer + CNN | Positional encoding → Transformer → temporal CNN → pooling/head |
+| M5 | GNN + LSTM | Small fixed sensor adjacency → graph convolution per time step → LSTM → head |
 
-## Recommended hybrid technique
+M5 still needs edges. Use a compact adjacency CSV derived from fold-training sensor
+correlations or supplied fixed metadata; document the rule. This is a sensor-relation
+model, not a full pipe-network/localization implementation. With no adjacency at all,
+it cannot honestly be called a GNN.
 
-Start with **1D-CNN + unidirectional LSTM**. CNN layers can extract short local signal patterns; the LSTM can model their temporal context. This is our practical starting hypothesis, not an experimentally proven winner.
+Classification is the main comparison. Demand forecasting remains a separate output
+for the original problem, evaluated with regression metrics and real-data training
+batches. A shared dual head is optional, not mandatory for every model. SMOTE does not
+balance continuous demand targets.
 
-Use a shared encoder with a future-demand regression head and a current-leak classification head. First establish seasonal persistence and conventional machine-learning baselines; add attention only if ablation results justify it. Use **GNN + LSTM** as the later topology-aware extension if localization becomes central.
+## Dataset and paper matching
 
-The [modeling plan](docs/modeling-plan.md) compares all five suggested hybrids, specifies chronological evaluation, and defines the steps needed to support Normal / Leakage / Abnormal consumption plus a calibrated leak-risk score. Detecting an existing small leak and predicting a future failure are separate targets.
+Retain [BattLeDIM / L-Town](https://doi.org/10.5281/zenodo.4017659) as the starting
+dataset; the full 2018 release is local. [LeakDB](https://github.com/KIOS-Research/LeakDB)
+is a candidate if more independent labeled scenarios are required.
 
-## Quick start
+Begin with a pressure-only feature track using the same ordered channels for all models.
+An expanded pressure/flow/AMR/level track may be compared separately. Do not attach
+unrelated BWDF weather to L-Town. Freeze features, windows and targets before comparisons.
 
-Python 3.11 or newer. From the project root, in PowerShell:
+The [paper register](docs/PAPERS_AND_REPRODUCTION.md) lists verified publications,
+their data/features and access limitations. Maintain two distinct result tracks:
+
+1. **Paper reproduction:** exact release/scenarios, channels, transformations, windows,
+   labels, training protocol, splits and metric definitions.
+2. **Our controlled comparison:** all five models share the same dataset/features/targets,
+   chronological folds and training-only SMOTE. Record differences from the paper.
+
+No single verified paper was found that provides the exact five hybrids and this whole
+workflow on identical public CSV features. Some L-Town papers train on newly simulated
+data, rather than the downloaded CSVs. Same network name does not establish reproduction.
+
+## Resolve target and fold feasibility first
+
+The aggregate leak label is positive 97.8% of 2018. Existing area labels also become
+constant in October–December: A/C always positive, B always negative. Fourteen observed
+events do not automatically support ten independent event folds. SMOTE cannot repair
+missing validation classes or create independent incidents.
+
+Revisit pipe/event/scenario targets against the chosen paper. Use binary leak/no-leak
+when only those labels exist. Normal / Leakage / Abnormal consumption needs an actual
+third-class label source, with simultaneous and unknown events handled explicitly.
+
+Produce a fold-feasibility table before training. A fold missing classes, sufficient
+SMOTE neighbors or usable purged events is unsupported. Do not shuffle or duplicate
+incidents to force ten valid folds; document a suitable scenario dataset or an explicit
+change in fold count.
+
+## Diagnostics and comparison metrics
+
+- Classification: accuracy, balanced accuracy, precision, recall, macro/per-class F1,
+  confusion matrices, average precision (PR-AUC definition) and ROC-AUC where defined.
+- Detection: event recall, false alert events/day, median/p90 detection delay and misses.
+- Risk scores: Brier score and reliability bins on real held-out data.
+- Demand forecasts: MAE, RMSE and bias in physical units, in a separate table.
+- Experimental comparison: per-fold scores, mean/std with valid-fold counts, class/event
+  support, at least three seeds for final neural comparisons, parameters and runtime.
+
+Use training/validation curves to diagnose fitting. Test capacity reduction, dropout,
+weight decay or early stopping for overfitting; investigate labels, scaling and
+optimization before increasing capacity/context for underfitting. Record corrections
+and retrain using the same selection protocol. Never correct a model based on final-test
+outcomes. Include no-SMOTE controls; balancing is not guaranteed to improve results.
+
+## Existing quick-start commands
+
+Python 3.11+; PowerShell from this repository:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-
-# Small start: 2018 flow data, nominal network, and upstream README (~4.4 MB)
-.\.venv\Scripts\smart-water.exe download
-.\.venv\Scripts\smart-water.exe prepare
-.\.venv\Scripts\smart-water.exe baseline
-
-# Add pressure, AMR consumption, tank levels and ground-truth leak labels
 .\.venv\Scripts\smart-water.exe download --full
 .\.venv\Scripts\smart-water.exe prepare
-
-# Validate the code without network access
-.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\smart-water.exe baseline
 .\.venv\Scripts\python.exe -m ruff check .
+# Avoid the existing fixed pytest_tmp ownership conflict:
+$reviewTemp = Join-Path $env:TEMP ('water-tests-' + [guid]::NewGuid().ToString('N'))
+.\.venv\Scripts\python.exe -m pytest -q --basetemp $reviewTemp
 ```
 
-On Linux/macOS, substitute `.venv/bin/python` and `.venv/bin/smart-water` for the executable paths. Downloading requires internet access. Completed files are checked against the publisher's MD5 checksums; raw data and generated reports are excluded from Git.
+The p227 seasonal flow score is not a leak-classification result. Raw data, processed
+arrays and large model files stay ignored by Git. Save exact dependency versions and
+source checksums for each run.
 
-The baseline forecasts sensor `p227` flow in m3/h using the value 288 five-minute steps earlier. It reports MAE and RMSE for October–December 2018, using observations available at each rolling forecast origin. This is a **flow forecast sanity check**, not a clean customer-demand estimate, leak detector, or fixed-origin multi-day forecast. Try `--period 2016` for a weekly seasonal comparison.
+## Next-model instructions
 
-For final evaluation, fetch 2019 after selecting the model and thresholds on 2018:
+Follow [HANDOFF_README.md](docs/HANDOFF_README.md) for execution and test conditions.
+Read [PLAN_CHANGE_REVIEW.md](docs/PLAN_CHANGE_REVIEW.md) for reusable work and required
+corrections. Earlier execution logs are historical evidence, not approval of the revised
+training protocol.
 
-```powershell
-.\.venv\Scripts\smart-water.exe download --year 2019 --full
-.\.venv\Scripts\smart-water.exe prepare --year 2019
-.\.venv\Scripts\smart-water.exe baseline --input data/raw/battledim/2019_SCADA_Flows.csv --start 2019-01-02 --output reports/baseline_2019.json
-```
-
-This separate-year baseline omits its first day's warmup; a future fixed-origin forecast benchmark must specify its own horizon and allowed history.
-
-## Repository layout
-
-```text
-src/smart_water/
-  data.py              # Verified downloads, schema/time checks, separate labels
-  baseline.py          # Rolling seasonal persistence and forecast metrics
-  cli.py               # download / prepare / baseline commands
-tests/                 # Units, time integrity, target separation, past-only baseline
-docs/
-  datasets.md          # Ranked datasets and source references
-  modeling-plan.md     # Architecture, labels, experiment design and milestones
-data/raw/              # Original datasets (ignored)
-data/processed/        # Generated features, labels and audit summary (ignored)
-reports/               # Generated metrics (ignored)
-.github/workflows/     # Python lint and tests
-```
-
-Preparation reads available sensor groups, rejects missing/nonfinite readings and broken or mismatched time grids, converts AMR L/h to m3/h, and adds calendar features. It preserves source timestamps without inventing a timezone. `*_features.csv` never contains leak ground truth; `*_labels.csv` contains a binary indicator when label files exist. The aggregate label means **any leak anywhere in the network**, not the label of an individual pipe or sensor.
-
-The full 2018 audit found that this aggregate label is positive **97.8% of the time**. It is an audit output; design area/pipe targets before training a useful classifier and evaluate event detection rather than timestamp accuracy.
-
-## Next milestones
-
-For another coding model to continue the project, follow the
-[step-by-step implementation handoff](docs/HANDOFF_README.md). It defines the four
-remaining research phases, their deliverables, acceptance tests and completion gates.
-
-1. Audit full 2018 data, sensor coverage, leak prevalence and event intervals.
-2. Establish forecasting and anomaly-detection baselines with chronological validation.
-3. Implement and train CNN + LSTM; evaluate event detection, delay and forecasting error.
-4. Calibrate probabilities and add separately labeled abnormal-demand scenarios.
-5. Compare attention and GNN variants, then build a dashboard with sensor-level evidence.
-
-This starter covers monitoring research. Pump scheduling, valve control and supply allocation optimization are later work requiring hydraulic and operational constraints.
-
-## Attribution
-
-BattLeDIM: Vrachimis et al., *Dataset of BattLeDIM: Battle of the Leakage Detection and Isolation Methods*, 2020, [DOI 10.5281/zenodo.4017659](https://doi.org/10.5281/zenodo.4017659), CC BY 4.0. Downloads retain the source README and checksum manifest. Other datasets retain their own terms; this repository does not redistribute them. No project software license has been selected yet.
+BattLeDIM attribution: Vrachimis et al., 2020,
+[DOI 10.5281/zenodo.4017659](https://doi.org/10.5281/zenodo.4017659), CC BY 4.0.
+Other datasets retain their own terms. No software license has been selected.
