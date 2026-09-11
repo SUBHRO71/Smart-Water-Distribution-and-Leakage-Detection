@@ -24,6 +24,14 @@ The problem's five techniques are candidates, not a substantiated universal rank
 
 ## First architecture (planned; not implemented)
 
+**Observed audit result:** 97.8025% of 2018 timestamps contain at least one active
+leak somewhere in the network. Treat the generated network-wide binary label as
+an audit artifact. Before implementing the classification head, map pipe events
+to appropriate areas or define pipe-level targets, measure per-target prevalence,
+and evaluate onset events. Do not train a nearly constant network-wide classifier
+and report its accuracy as successful leak detection. The demand forecast head can
+proceed independently while this target design is resolved.
+
 1. Input a trailing 24-hour window (288 five-minute steps). Compare 6/24/48-hour contexts on validation only. Features: flow, pressure, AMR consumption, level, calendar values, causal changes and missingness masks. Fit scalers on training only.
 2. Apply two temporal Conv1D layers (32 then 64 channels, kernel sizes 5 and 3), ReLU and dropout 0.1. Use causal padding for streaming intermediate outputs; all inputs must precede the prediction origin.
 3. Feed sequence features to a unidirectional LSTM with 64 hidden units. Use its last hidden state; test temporal attention as a separate ablation.

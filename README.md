@@ -82,6 +82,8 @@ reports/               # Generated metrics (ignored)
 
 Preparation reads available sensor groups, rejects missing/nonfinite readings and broken or mismatched time grids, converts AMR L/h to m3/h, and adds calendar features. It preserves source timestamps without inventing a timezone. `*_features.csv` never contains leak ground truth; `*_labels.csv` contains a binary indicator when label files exist. The aggregate label means **any leak anywhere in the network**, not the label of an individual pipe or sensor.
 
+The full 2018 audit found that this aggregate label is positive **97.8% of the time**. It is an audit output; design area/pipe targets before training a useful classifier and evaluate event detection rather than timestamp accuracy.
+
 ## Next milestones
 
 1. Audit full 2018 data, sensor coverage, leak prevalence and event intervals.

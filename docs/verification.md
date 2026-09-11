@@ -10,6 +10,14 @@ support installation; these versions record the actual initial verification envi
 - Ruff checks passed.
 - Official 2018 flow data passed checksum and schema validation: 105,120 rows,
   January 1 at 00:00 through December 31 at 23:55, every five minutes.
+- Full 2018 download also passed upstream checksums and preparation: all four
+  sensor groups align, producing 122 features (119 sensor channels plus 3 calendar
+  features) and a separate label file.
+- The aggregate `is_leak` label is positive on 97.8025% of timestamps. A constant
+  positive classifier would therefore achieve 97.8025% timestamp accuracy without
+  detecting individual events. Area/pipe target design and event metrics are required
+  before training; the aggregate label is primarily a data-audit output.
+- GitHub Actions passed on Python 3.11 and 3.13 for the initial implementation.
 
 ## Initial baseline
 
